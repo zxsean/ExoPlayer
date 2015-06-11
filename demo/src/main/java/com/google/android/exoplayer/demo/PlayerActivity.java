@@ -30,13 +30,11 @@ import com.google.android.exoplayer.util.Util;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Surface;
-import android.view.TextureView;
-import android.view.TextureView.SurfaceTextureListener;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -47,7 +45,7 @@ import java.net.CookiePolicy;
 /**
  * An activity that plays media using {@link DemoPlayer}.
  */
-public class PlayerActivity extends Activity implements SurfaceTextureListener,
+public class PlayerActivity extends Activity implements SurfaceHolder.Callback,
     DemoPlayer.Listener {
 
   public static final int TYPE_DASH = 0;
@@ -73,10 +71,8 @@ public class PlayerActivity extends Activity implements SurfaceTextureListener,
   }
 
   private static DemoPlayer player;
-  private static SurfaceTexture surfaceTexture;
-  private static Surface surface;
 
-  private TextureView textureView;
+  private SurfaceView surfaceView;
 
   private Uri contentUri;
   private int contentType;
@@ -95,13 +91,9 @@ public class PlayerActivity extends Activity implements SurfaceTextureListener,
 
     setContentView(R.layout.player_activity);
 
-    textureView = (TextureView) findViewById(R.id.texture_view);
-    if (surfaceTexture != null) {
-      Log.e("XXX", "onCreate:setSurfaceTexture\t"+surface.hashCode()+"\t"+surfaceTexture.hashCode());
-      textureView.setSurfaceTexture(surfaceTexture);
-    }
-    textureView.setSurfaceTextureListener(this);
-    textureView.setOnClickListener(new OnClickListener() {
+    surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+    surfaceView.getHolder().addCallback(this);
+    surfaceView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View view) {
         startActivity(intent);
@@ -128,18 +120,16 @@ public class PlayerActivity extends Activity implements SurfaceTextureListener,
       player.prepare();
       player.setPlayWhenReady(true);
     }
+    player.setSurface(surfaceView.getHolder().getSurface());
 
     // Attach to player.
     player.addListener(this);
-    if (surface != null) {
-      Log.e("XXX", "prepare:setSurface\t"+surface.hashCode());
-      player.setSurface(surface);
-    }
   }
 
   @Override
   public void onPause() {
     super.onPause();
+    player.blockingClearSurface();
     player.removeListener(this);
   }
 
@@ -190,29 +180,25 @@ public class PlayerActivity extends Activity implements SurfaceTextureListener,
     // Do nothing.
   }
 
-  // SurfaceTexture listener.
+  // SurfaceHolder.Callback implementation
 
   @Override
-  public void onSurfaceTextureAvailable(SurfaceTexture texture, int w, int h) {
-    surfaceTexture = texture;
-    surface = new Surface(texture);
-    Log.e("XXX", "onSurfaceTextureAvailable\t"+surface.hashCode()+"\t"+surfaceTexture.hashCode());
-    player.setSurface(surface);
+  public void surfaceCreated(SurfaceHolder holder) {
+    if (player != null) {
+      player.setSurface(holder.getSurface());
+    }
   }
 
   @Override
-  public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
-    return false;
+  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    if (player != null) {
+      player.setSurface(holder.getSurface());
+    }
   }
 
   @Override
-  public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int w, int h) {
-    // Do nothing.
-  }
-
-  @Override
-  public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-    // Do nothing.
+  public void surfaceDestroyed(SurfaceHolder holder) {
+    // Do nothing. The surface is detached in onPause.
   }
 
 }

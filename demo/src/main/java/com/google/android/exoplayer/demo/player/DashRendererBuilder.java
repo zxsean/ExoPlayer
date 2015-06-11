@@ -17,6 +17,7 @@ package com.google.android.exoplayer.demo.player;
 
 import com.google.android.exoplayer.C;
 import com.google.android.exoplayer.DefaultLoadControl;
+import com.google.android.exoplayer.GlMediaCodecVideoTrackRenderer;
 import com.google.android.exoplayer.LoadControl;
 import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;
 import com.google.android.exoplayer.MediaCodecUtil.DecoderQueryException;
@@ -228,7 +229,7 @@ public class DashRendererBuilder implements RendererBuilder,
       ChunkSampleSource videoSampleSource = new ChunkSampleSource(videoChunkSource, loadControl,
           VIDEO_BUFFER_SEGMENTS * BUFFER_SEGMENT_SIZE, true, mainHandler, player,
           DemoPlayer.TYPE_VIDEO);
-      videoRenderer = new MediaCodecVideoTrackRenderer(videoSampleSource, drmSessionManager, true,
+      videoRenderer = new GlMediaCodecVideoTrackRenderer(videoSampleSource, drmSessionManager, true,
           MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT, 5000, null, mainHandler, player, 50);
     }
 

@@ -473,14 +473,14 @@ public class MediaCodecVideoTrackRenderer extends MediaCodecTrackRenderer {
 
   protected void skipOutputBuffer(MediaCodec codec, int bufferIndex) {
     TraceUtil.beginSection("skipVideoBuffer");
-    codec.releaseOutputBuffer(bufferIndex, false);
+    codec.releaseOutputBuffer(bufferIndex, true);
     TraceUtil.endSection();
     codecCounters.skippedOutputBufferCount++;
   }
 
   protected void dropOutputBuffer(MediaCodec codec, int bufferIndex) {
     TraceUtil.beginSection("dropVideoBuffer");
-    codec.releaseOutputBuffer(bufferIndex, false);
+    codec.releaseOutputBuffer(bufferIndex, true);
     TraceUtil.endSection();
     codecCounters.droppedOutputBufferCount++;
     droppedFrameCount++;
